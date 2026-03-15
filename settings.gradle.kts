@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Doc Vault"
 include(":app")
- 
+include(":domain")
+include(":data")
+include(":core")
+include(":feature_docs")

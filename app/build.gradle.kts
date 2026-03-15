@@ -40,6 +40,9 @@ android {
 }
 
 dependencies {
+    //modules
+    implementation(project(":data"))
+    implementation(project(":feature_docs"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
