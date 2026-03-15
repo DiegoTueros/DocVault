@@ -4,6 +4,7 @@ import com.docvault.data.local.dao.DocumentAccessDao
 import com.docvault.data.local.dao.DocumentDao
 import com.docvault.data.mapper.toDomain
 import com.docvault.data.mapper.toEntity
+import com.docvault.data.security.SecureFileStorage
 import com.docvault.domain.model.Document
 import com.docvault.domain.model.DocumentAccess
 import com.docvault.domain.model.DocumentType
@@ -11,22 +12,50 @@ import com.docvault.domain.repository.DocumentRepository
 
 class DocumentRepositoryImpl(
     private val documentDao: DocumentDao,
-    private val accessDao: DocumentAccessDao
+    private val accessDao: DocumentAccessDao,
+    private val secureFileStorage: SecureFileStorage
 ) : DocumentRepository {
 
     override suspend fun getDocuments(): List<Document> {
-        return documentDao.getDocuments().map { it.toDomain() }
+        return documentDao
+            .getDocuments()
+            .map { it.toDomain() }
     }
 
     override suspend fun getDocumentsByType(type: DocumentType): List<Document> {
-        return documentDao.getDocumentsByType(type.name).map { it.toDomain() }
+        return documentDao
+            .getDocumentsByType(type.name)
+            .map { it.toDomain() }
     }
 
     override suspend fun addDocument(document: Document) {
         documentDao.insertDocument(document.toEntity())
     }
 
+    suspend fun saveDocumentFile(
+        document: Document,
+        fileBytes: ByteArray
+    ) {
+        val encryptedPath = secureFileStorage.saveFile(
+            fileName = document.id,
+            data = fileBytes
+        )
+        val documentWithPath = document.copy(
+            encryptedPath = encryptedPath
+        )
+
+        documentDao.insertDocument(
+            documentWithPath.toEntity()
+        )
+    }
+
     override suspend fun deleteDocument(documentId: String) {
+
+        val entity = documentDao.getDocumentById(documentId)
+            ?: return
+
+        secureFileStorage.deleteFile(entity.encryptedPath)
+
         documentDao.deleteDocument(documentId)
     }
 
@@ -40,7 +69,8 @@ class DocumentRepositoryImpl(
     }
 
     override suspend fun getDocumentAccessHistory(documentId: String): List<DocumentAccess> {
-        return accessDao.getAccessHistory(documentId)
+        return accessDao
+            .getAccessHistory(documentId)
             .map {
                 DocumentAccess(
                     documentId = it.documentId,
