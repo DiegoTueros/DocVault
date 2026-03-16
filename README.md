@@ -39,20 +39,20 @@ DocVault es una aplicación para Android que permite almacenar y visualizar docu
 ---
 
 ## Estructura de proyecto
--com.docvault
--├── 📁 feature_docs
--│ ├── 📁 documents
--│ │ ├── 📄 DocumentsScreen.kt
--│ │ ├── 📄 DocumentsViewModel.kt
--│ │ └── 📁 interactor
--│ ├── 📁 documents_viewer
--│ │ └── 📄 DocumentViewerScreen.kt
--│ └── 📁 components
--├── 📁 domain
--│ └── 📁 model / usecase / repository
--├── 📁 data
--│ └── 📁 local / mapper / repository / security
--└── 📁 navigation
+com.docvault
+├── 📁 feature_docs
+│ ├── 📁 documents
+│ │ ├── 📄 DocumentsScreen.kt
+│ │ ├── 📄 DocumentsViewModel.kt
+│ │ └── 📁 interactor
+│ ├── 📁 documents_viewer
+│ │ └── 📄 DocumentViewerScreen.kt
+│ └── 📁 components
+├── 📁 domain
+│ └── 📁 model / usecase / repository
+├── 📁 data
+│ └── 📁 local / mapper / repository / security
+└── 📁 navigation
 
 ---
 
