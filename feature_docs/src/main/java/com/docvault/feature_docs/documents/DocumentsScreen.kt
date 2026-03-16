@@ -1,5 +1,6 @@
 package com.docvault.feature_docs.documents
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricPrompt
@@ -24,7 +25,11 @@ import com.docvault.feature_docs.componets.DocumentItem
 import com.docvault.feature_docs.documents.interactor.DocumentsEvent
 import com.docvault.feature_docs.documents.interactor.DocumentsIntent
 import com.docvault.feature_docs.documents.interactor.DocumentsState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DocumentsScreen(
     state: DocumentsState,
@@ -34,6 +39,16 @@ fun DocumentsScreen(
 ) {
 
     val context = LocalContext.current
+
+    val locationPermissionState = rememberPermissionState(
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
+    LaunchedEffect(Unit) {
+        if (locationPermissionState.status.isGranted) {
+            locationPermissionState.launchPermissionRequest()
+        }
+    }
 
     LaunchedEffect(Unit) {
         onIntent(DocumentsIntent.LoadDocuments)

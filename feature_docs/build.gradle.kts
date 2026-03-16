@@ -48,4 +48,6 @@ dependencies {
     implementation(libs.coroutines.android)
 
     implementation(libs.androidx.biometric)
+    implementation(libs.play.services.location)
+    implementation(libs.accompanist.permissions)
 }

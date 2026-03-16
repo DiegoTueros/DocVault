@@ -1,5 +1,10 @@
 package com.docvault.feature_docs.documents
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.docvault.domain.model.Document
@@ -12,17 +17,20 @@ import com.docvault.feature_docs.documents.interactor.DocumentsEvent
 import com.docvault.feature_docs.documents.interactor.DocumentsIntent
 import com.docvault.feature_docs.documents.interactor.DocumentsState
 import com.docvault.feature_docs.documents_viewer.interactor.DocumentViewerState
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.UUID
 
 class DocumentsViewModel(
     private val getDocumentsUseCase: GetDocumentsUseCase,
     private val getDocumentsByTypeUseCase: GetDocumentsByTypeUseCase,
     private val saveDocumentUseCase: SaveDocumentUseCase,
-    private val getDocumentFileUseCase: GetDocumentFileUseCase
+    private val getDocumentFileUseCase: GetDocumentFileUseCase,
+    private val applicationContext: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DocumentsState())
@@ -36,6 +44,8 @@ class DocumentsViewModel(
 
     val viewerState: StateFlow<DocumentViewerState> =
         _viewerState
+
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
 
     fun onIntent(intent: DocumentsIntent) {
 
@@ -129,28 +139,6 @@ class DocumentsViewModel(
         }
     }
 
-    /*private fun openDocument(
-        document: Document
-    ) {
-        viewModelScope.launch {
-
-            val bytes =
-                getDocumentFileUseCase(
-                    document.encryptedPath
-                )
-
-            _viewerState.value =
-                DocumentViewerState(
-                    bytes = bytes,
-                    type = document.type
-                )
-
-            _event.emit(
-                DocumentsEvent.OpenDocumentViewer
-            )
-        }
-    }*/
-
     private fun openDocument(
         document: Document
     ) {
@@ -169,20 +157,44 @@ class DocumentsViewModel(
     ) {
         viewModelScope.launch {
 
-            val bytes =
-                getDocumentFileUseCase(
-                    document.encryptedPath
-                )
+            val bytes = getDocumentFileUseCase(document.encryptedPath)
+            val location = getLocation()
 
-            _viewerState.value =
-                DocumentViewerState(
-                    bytes = bytes,
-                    type = document.type
-                )
+            _viewerState.value = DocumentViewerState(
+                bytes = bytes,
+                type = document.type,
+                location = location
+            )
 
             _event.emit(
                 DocumentsEvent.OpenDocumentViewer
             )
+        }
+    }
+
+    suspend fun getLocation(): String {
+        return suspendCancellableCoroutine { cont ->
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val geocoder = Geocoder(applicationContext)
+                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        val street = addresses?.firstOrNull()?.thoroughfare ?: "Unknown Street"
+                        cont.resume(street, null)
+                    } else {
+                        cont.resume("Unknown Street", null)
+                    }
+                }.addOnFailureListener {
+                    cont.resume("Unknown Street", null)
+                }
+            } else {
+                // Si no hay permisos, devuelve "Unknown Street"
+                cont.resume("Unknown Street", null)
+            }
         }
     }
 }

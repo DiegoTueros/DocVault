@@ -23,7 +23,8 @@ class DocumentsViewModelFactory(
             getDocuments,
             getDocumentsByType,
             saveDocument,
-            getDocumentFile
+            getDocumentFile,
+            context
         ) as T
     }
 }
