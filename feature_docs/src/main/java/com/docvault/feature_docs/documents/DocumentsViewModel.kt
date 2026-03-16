@@ -60,6 +60,10 @@ class DocumentsViewModel(
             is DocumentsIntent.OpenDocument -> {
                 openDocument(intent.document)
             }
+
+            is DocumentsIntent.BiometricSuccess -> {
+                onBiometricSuccess(intent.document)
+            }
         }
     }
 
@@ -125,7 +129,42 @@ class DocumentsViewModel(
         }
     }
 
+    /*private fun openDocument(
+        document: Document
+    ) {
+        viewModelScope.launch {
+
+            val bytes =
+                getDocumentFileUseCase(
+                    document.encryptedPath
+                )
+
+            _viewerState.value =
+                DocumentViewerState(
+                    bytes = bytes,
+                    type = document.type
+                )
+
+            _event.emit(
+                DocumentsEvent.OpenDocumentViewer
+            )
+        }
+    }*/
+
     private fun openDocument(
+        document: Document
+    ) {
+        viewModelScope.launch {
+
+            _event.emit(
+                DocumentsEvent.RequestBiometricAuth(
+                    document
+                )
+            )
+        }
+    }
+
+    fun onBiometricSuccess(
         document: Document
     ) {
         viewModelScope.launch {

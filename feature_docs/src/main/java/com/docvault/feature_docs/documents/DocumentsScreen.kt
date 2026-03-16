@@ -2,6 +2,7 @@ package com.docvault.feature_docs.documents
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import com.docvault.domain.model.DocumentType
 import com.docvault.feature_docs.componets.DocumentItem
 import com.docvault.feature_docs.documents.interactor.DocumentsEvent
@@ -39,8 +42,46 @@ fun DocumentsScreen(
     LaunchedEffect(Unit) {
         event.collect { event ->
             when (event) {
+
                 is DocumentsEvent.OpenDocumentViewer -> {
                     onNavigateToViewer()
+                }
+
+                is DocumentsEvent.RequestBiometricAuth -> {
+
+                    val executor =
+                        ContextCompat.getMainExecutor(context)
+
+                    val activity = context as? FragmentActivity
+                        ?: return@collect
+
+                    val biometricPrompt =
+                        BiometricPrompt(
+                            activity,
+                            executor,
+                            object : BiometricPrompt.AuthenticationCallback() {
+
+                                override fun onAuthenticationSucceeded(
+                                    result: BiometricPrompt.AuthenticationResult
+                                ) {
+
+                                    onIntent(
+                                        DocumentsIntent.BiometricSuccess(
+                                            event.document
+                                        )
+                                    )
+                                }
+                            }
+                        )
+
+                    val promptInfo =
+                        BiometricPrompt.PromptInfo.Builder()
+                            .setTitle("Authenticate")
+                            .setSubtitle("Confirm to open document")
+                            .setNegativeButtonText("Cancel")
+                            .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                 }
 
                 else -> {}
@@ -61,7 +102,7 @@ fun DocumentsScreen(
 
             bytes?.let { data ->
 
-                val mimeType = context.contentResolver.getType(uri)
+                val mimeType = context.contentResolver.getType(it)
 
                 val type =
                     if (mimeType == "application/pdf")

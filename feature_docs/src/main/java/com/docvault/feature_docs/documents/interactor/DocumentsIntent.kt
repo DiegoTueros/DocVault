@@ -22,4 +22,8 @@ sealed interface DocumentsIntent {
     data class OpenDocument(
         val document: Document
     ) : DocumentsIntent
+
+    data class BiometricSuccess(
+        val document: Document
+    ) : DocumentsIntent
 }

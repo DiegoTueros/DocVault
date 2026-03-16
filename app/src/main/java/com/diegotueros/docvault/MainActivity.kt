@@ -1,14 +1,14 @@
 package com.diegotueros.docvault
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import com.diegotueros.docvault.di.DocumentsViewModelFactory
 import com.diegotueros.docvault.navigation.DocVaultNavHost
 import com.docvault.feature_docs.documents.DocumentsViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewModel = ViewModelProvider(
