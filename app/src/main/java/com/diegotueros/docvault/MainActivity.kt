@@ -16,6 +16,11 @@ class MainActivity : AppCompatActivity() {
             DocumentsViewModelFactory(applicationContext)
         )[DocumentsViewModel::class.java]
 
+        window.setFlags(-
+            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+            android.view.WindowManager.LayoutParams.FLAG_SECURE
+        )
+
         setContent {
             DocVaultNavHost(
                 viewModel = viewModel
