@@ -84,8 +84,11 @@ class DocumentRepositoryImpl(
     }
 
     override suspend fun getDocumentFile(
-        path: String
+        encryptedPath: String
     ): ByteArray {
-        return secureFileStorage.readFile(path)
+
+        return secureFileStorage.readFile(
+            encryptedPath
+        )
     }
 }

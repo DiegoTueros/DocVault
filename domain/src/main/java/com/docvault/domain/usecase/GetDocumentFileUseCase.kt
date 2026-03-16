@@ -6,8 +6,10 @@ class GetDocumentFileUseCase(
     private val repository: DocumentRepository
 ) {
     suspend operator fun invoke(
-        path: String
+        encryptedPath: String
     ): ByteArray {
-        return repository.getDocumentFile(path)
+        return repository.getDocumentFile(
+            encryptedPath
+        )
     }
 }

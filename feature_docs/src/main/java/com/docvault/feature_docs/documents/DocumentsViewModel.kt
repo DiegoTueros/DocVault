@@ -11,6 +11,7 @@ import com.docvault.domain.usecase.SaveDocumentUseCase
 import com.docvault.feature_docs.documents.interactor.DocumentsEvent
 import com.docvault.feature_docs.documents.interactor.DocumentsIntent
 import com.docvault.feature_docs.documents.interactor.DocumentsState
+import com.docvault.feature_docs.documents_viewer.interactor.DocumentViewerState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,12 @@ class DocumentsViewModel(
     private val _event = MutableSharedFlow<DocumentsEvent>()
     val event = _event
 
+    private val _viewerState =
+        MutableStateFlow(DocumentViewerState())
+
+    val viewerState: StateFlow<DocumentViewerState> =
+        _viewerState
+
     fun onIntent(intent: DocumentsIntent) {
 
         when (intent) {
@@ -47,7 +54,7 @@ class DocumentsViewModel(
             }
 
             is DocumentsIntent.SaveDocument -> {
-                saveDocument(intent.name, intent.fileBytes)
+                saveDocument(intent.name, intent.fileBytes, intent.type)
             }
 
             is DocumentsIntent.OpenDocument -> {
@@ -100,15 +107,14 @@ class DocumentsViewModel(
 
     private fun saveDocument(
         name: String,
-        fileBytes: ByteArray
+        fileBytes: ByteArray,
+        type: DocumentType
     ) {
-
         viewModelScope.launch {
-
             val document = Document(
                 id = UUID.randomUUID().toString(),
                 name = name,
-                type = if (name.endsWith("pdf")) DocumentType.PDF else DocumentType.IMAGE,
+                type = type,
                 encryptedPath = "",
                 createdAt = System.currentTimeMillis()
             )
@@ -129,11 +135,14 @@ class DocumentsViewModel(
                     document.encryptedPath
                 )
 
-            _event.emit(
-                DocumentsEvent.OpenDocumentViewer(
+            _viewerState.value =
+                DocumentViewerState(
                     bytes = bytes,
                     type = document.type
                 )
+
+            _event.emit(
+                DocumentsEvent.OpenDocumentViewer
             )
         }
     }

@@ -16,20 +16,36 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.docvault.domain.model.DocumentType
 import com.docvault.feature_docs.componets.DocumentItem
+import com.docvault.feature_docs.documents.interactor.DocumentsEvent
 import com.docvault.feature_docs.documents.interactor.DocumentsIntent
 import com.docvault.feature_docs.documents.interactor.DocumentsState
 
 @Composable
 fun DocumentsScreen(
     state: DocumentsState,
-    onIntent: (DocumentsIntent) -> Unit
+    event: kotlinx.coroutines.flow.SharedFlow<DocumentsEvent>,
+    onIntent: (DocumentsIntent) -> Unit,
+    onNavigateToViewer: () -> Unit
 ) {
 
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         onIntent(DocumentsIntent.LoadDocuments)
+    }
+
+    LaunchedEffect(Unit) {
+        event.collect { event ->
+            when (event) {
+                is DocumentsEvent.OpenDocumentViewer -> {
+                    onNavigateToViewer()
+                }
+
+                else -> {}
+            }
+        }
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -45,12 +61,25 @@ fun DocumentsScreen(
 
             bytes?.let { data ->
 
-                val name = "document_${System.currentTimeMillis()}"
+                val mimeType = context.contentResolver.getType(uri)
+
+                val type =
+                    if (mimeType == "application/pdf")
+                        DocumentType.PDF
+                    else
+                        DocumentType.IMAGE
+
+                val name =
+                    if (type == DocumentType.PDF)
+                        "document_${System.currentTimeMillis()}.pdf"
+                    else
+                        "document_${System.currentTimeMillis()}.jpg"
 
                 onIntent(
                     DocumentsIntent.SaveDocument(
                         name = name,
-                        fileBytes = data
+                        fileBytes = data,
+                        type = type
                     )
                 )
             }

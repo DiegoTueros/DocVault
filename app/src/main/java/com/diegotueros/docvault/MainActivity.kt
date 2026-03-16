@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import com.diegotueros.docvault.di.DocumentsViewModelFactory
+import com.diegotueros.docvault.navigation.DocVaultNavHost
 import com.docvault.feature_docs.documents.DocumentsViewModel
 
 class MainActivity : ComponentActivity() {
@@ -16,7 +17,9 @@ class MainActivity : ComponentActivity() {
         )[DocumentsViewModel::class.java]
 
         setContent {
-            DocumentsRoute(viewModel)
+            DocVaultNavHost(
+                viewModel = viewModel
+            )
         }
     }
 }

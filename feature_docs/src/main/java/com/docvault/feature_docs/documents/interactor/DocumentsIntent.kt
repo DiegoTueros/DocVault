@@ -14,8 +14,9 @@ sealed interface DocumentsIntent {
     data object AddDocumentClicked : DocumentsIntent
 
     data class SaveDocument(
+        val name: String,
         val fileBytes: ByteArray,
-        val name: String
+        val type: DocumentType
     ) : DocumentsIntent
 
     data class OpenDocument(

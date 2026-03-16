@@ -12,5 +12,5 @@ interface DocumentRepository {
     suspend fun registerAccess(documentId: String)
     suspend fun getDocumentAccessHistory(documentId: String): List<DocumentAccess>
     suspend fun saveDocumentFile(document: Document, fileBytes: ByteArray)
-    suspend fun getDocumentFile(path: String): ByteArray
+    suspend fun getDocumentFile(encryptedPath: String): ByteArray
 }
