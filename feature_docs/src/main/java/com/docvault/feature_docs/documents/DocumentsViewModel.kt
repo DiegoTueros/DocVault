@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.docvault.domain.model.Document
 import com.docvault.domain.model.DocumentType
+import com.docvault.domain.usecase.GetDocumentFileUseCase
 import com.docvault.domain.usecase.GetDocumentsByTypeUseCase
 import com.docvault.domain.usecase.GetDocumentsUseCase
 import com.docvault.domain.usecase.SaveDocumentUseCase
@@ -19,7 +20,8 @@ import java.util.UUID
 class DocumentsViewModel(
     private val getDocumentsUseCase: GetDocumentsUseCase,
     private val getDocumentsByTypeUseCase: GetDocumentsByTypeUseCase,
-    private val saveDocumentUseCase: SaveDocumentUseCase
+    private val saveDocumentUseCase: SaveDocumentUseCase,
+    private val getDocumentFileUseCase: GetDocumentFileUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DocumentsState())
@@ -47,6 +49,10 @@ class DocumentsViewModel(
             is DocumentsIntent.SaveDocument -> {
                 saveDocument(intent.name, intent.fileBytes)
             }
+
+            is DocumentsIntent.OpenDocument -> {
+                openDocument(intent.document)
+            }
         }
     }
 
@@ -66,19 +72,33 @@ class DocumentsViewModel(
         }
     }
 
-    private fun filterDocuments(type: com.docvault.domain.model.DocumentType?) {
-        _state.value = _state.value.copy(
-            selectedFilter = type
-        )
+    private fun filterDocuments(type: DocumentType?) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                selectedFilter = type,
+                isLoading = true
+            )
+
+            val documents = if (type == null) {
+                getDocumentsUseCase()
+            } else {
+                getDocumentsByTypeUseCase(type)
+            }
+
+            _state.value = _state.value.copy(
+                documents = documents,
+                isLoading = false
+            )
+        }
     }
 
     private fun navigateToAddDocument() {
-        kotlinx.coroutines.GlobalScope.launch {
+        viewModelScope.launch {
             _event.emit(DocumentsEvent.NavigateToAddDocument)
         }
     }
 
-    fun saveDocument(
+    private fun saveDocument(
         name: String,
         fileBytes: ByteArray
     ) {
@@ -96,6 +116,25 @@ class DocumentsViewModel(
             saveDocumentUseCase(document, fileBytes)
 
             loadDocuments()
+        }
+    }
+
+    private fun openDocument(
+        document: Document
+    ) {
+        viewModelScope.launch {
+
+            val bytes =
+                getDocumentFileUseCase(
+                    document.encryptedPath
+                )
+
+            _event.emit(
+                DocumentsEvent.OpenDocumentViewer(
+                    bytes = bytes,
+                    type = document.type
+                )
+            )
         }
     }
 }

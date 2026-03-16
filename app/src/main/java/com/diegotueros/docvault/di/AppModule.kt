@@ -7,6 +7,7 @@ import com.docvault.data.repository.DocumentRepositoryImpl
 import com.docvault.data.security.CryptoManager
 import com.docvault.data.security.SecureFileStorage
 import com.docvault.domain.repository.DocumentRepository
+import com.docvault.domain.usecase.GetDocumentFileUseCase
 import com.docvault.domain.usecase.GetDocumentsByTypeUseCase
 import com.docvault.domain.usecase.GetDocumentsUseCase
 import com.docvault.domain.usecase.SaveDocumentUseCase
@@ -72,5 +73,13 @@ object AppModule {
         val repository = provideRepository(context)
 
         return SaveDocumentUseCase(repository)
+    }
+
+    fun provideGetDocumentFileUseCase(
+        context: Context
+    ): GetDocumentFileUseCase {
+        val repository = provideRepository(context)
+
+        return GetDocumentFileUseCase(repository)
     }
 }

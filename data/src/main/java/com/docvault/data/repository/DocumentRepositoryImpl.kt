@@ -82,4 +82,10 @@ class DocumentRepositoryImpl(
             entity.toEntity()
         )
     }
+
+    override suspend fun getDocumentFile(
+        path: String
+    ): ByteArray {
+        return secureFileStorage.readFile(path)
+    }
 }

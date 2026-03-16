@@ -12,9 +12,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.docvault.feature_docs.componets.DocumentItem
 import com.docvault.feature_docs.documents.interactor.DocumentsIntent
 import com.docvault.feature_docs.documents.interactor.DocumentsState
 
@@ -25,6 +27,10 @@ fun DocumentsScreen(
 ) {
 
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        onIntent(DocumentsIntent.LoadDocuments)
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -78,10 +84,17 @@ fun DocumentsScreen(
 
             LazyColumn {
 
-                items(state.documents.size) {
+                items(state.documents.size) { index ->
 
-                    Text(
-                        text = state.documents[it].name
+                    DocumentItem(
+                        document = state.documents[index],
+                        onClick = {
+                            onIntent(
+                                DocumentsIntent.OpenDocument(
+                                    state.documents[index]
+                                )
+                            )
+                        }
                     )
                 }
             }

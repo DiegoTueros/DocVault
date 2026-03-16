@@ -1,5 +1,6 @@
 package com.docvault.feature_docs.documents.interactor
 
+import com.docvault.domain.model.Document
 import com.docvault.domain.model.DocumentType
 
 sealed interface DocumentsIntent {
@@ -15,5 +16,9 @@ sealed interface DocumentsIntent {
     data class SaveDocument(
         val fileBytes: ByteArray,
         val name: String
+    ) : DocumentsIntent
+
+    data class OpenDocument(
+        val document: Document
     ) : DocumentsIntent
 }
