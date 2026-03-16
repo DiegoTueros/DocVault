@@ -11,4 +11,5 @@ interface DocumentRepository {
     suspend fun deleteDocument(documentId: String)
     suspend fun registerAccess(documentId: String)
     suspend fun getDocumentAccessHistory(documentId: String): List<DocumentAccess>
+    suspend fun saveDocumentFile(document: Document, fileBytes: ByteArray)
 }

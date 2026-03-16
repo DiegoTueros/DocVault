@@ -32,23 +32,6 @@ class DocumentRepositoryImpl(
         documentDao.insertDocument(document.toEntity())
     }
 
-    suspend fun saveDocumentFile(
-        document: Document,
-        fileBytes: ByteArray
-    ) {
-        val encryptedPath = secureFileStorage.saveFile(
-            fileName = document.id,
-            data = fileBytes
-        )
-        val documentWithPath = document.copy(
-            encryptedPath = encryptedPath
-        )
-
-        documentDao.insertDocument(
-            documentWithPath.toEntity()
-        )
-    }
-
     override suspend fun deleteDocument(documentId: String) {
 
         val entity = documentDao.getDocumentById(documentId)
@@ -77,5 +60,26 @@ class DocumentRepositoryImpl(
                     accessedAt = it.accessedAt
                 )
             }
+    }
+
+    override suspend fun saveDocumentFile(
+        document: Document,
+        fileBytes: ByteArray
+    ) {
+
+        val fileName = "${document.id}.enc"
+
+        val encryptedPath = secureFileStorage.saveFile(
+            fileName = fileName,
+            data = fileBytes
+        )
+
+        val entity = document.copy(
+            encryptedPath = encryptedPath
+        )
+
+        documentDao.insertDocument(
+            entity.toEntity()
+        )
     }
 }

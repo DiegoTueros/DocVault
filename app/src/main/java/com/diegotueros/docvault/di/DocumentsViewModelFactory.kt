@@ -15,10 +15,12 @@ class DocumentsViewModelFactory(
 
         val getDocumentsByType = AppModule.provideGetDocumentsByTypeUseCase(context)
 
+        val saveDocument = AppModule.provideSaveDocumentUseCase(context)
+
         return DocumentsViewModel(
             getDocuments,
-            getDocumentsByType
+            getDocumentsByType,
+            saveDocument
         ) as T
     }
-
 }
