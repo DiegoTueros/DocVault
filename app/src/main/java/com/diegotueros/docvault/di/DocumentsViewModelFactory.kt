@@ -19,11 +19,17 @@ class DocumentsViewModelFactory(
 
         val getDocumentFile = AppModule.provideGetDocumentFileUseCase(context)
 
+        val getDocumentAccessHistory = AppModule.provideGetDocumentAccessHistoryUseCase(context)
+
+        val registerAccess = AppModule.provideRegisterAccessUseCase(context)
+
         return DocumentsViewModel(
             getDocuments,
             getDocumentsByType,
             saveDocument,
             getDocumentFile,
+            registerAccess,
+            getDocumentAccessHistory,
             context
         ) as T
     }

@@ -9,9 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.docvault.domain.model.Document
 import com.docvault.domain.model.DocumentType
+import com.docvault.domain.usecase.GetDocumentAccessHistoryUseCase
 import com.docvault.domain.usecase.GetDocumentFileUseCase
 import com.docvault.domain.usecase.GetDocumentsByTypeUseCase
 import com.docvault.domain.usecase.GetDocumentsUseCase
+import com.docvault.domain.usecase.RegisterAccessUseCase
 import com.docvault.domain.usecase.SaveDocumentUseCase
 import com.docvault.feature_docs.documents.interactor.DocumentsEvent
 import com.docvault.feature_docs.documents.interactor.DocumentsIntent
@@ -30,6 +32,8 @@ class DocumentsViewModel(
     private val getDocumentsByTypeUseCase: GetDocumentsByTypeUseCase,
     private val saveDocumentUseCase: SaveDocumentUseCase,
     private val getDocumentFileUseCase: GetDocumentFileUseCase,
+    private val registerAccessUseCase: RegisterAccessUseCase,
+    private val getDocumentAccessHistory: GetDocumentAccessHistoryUseCase,
     private val applicationContext: Context
 ) : ViewModel() {
 
@@ -144,11 +148,29 @@ class DocumentsViewModel(
     ) {
         viewModelScope.launch {
 
-            _event.emit(
-                DocumentsEvent.RequestBiometricAuth(
-                    document
-                )
+            val bytes = getDocumentFileUseCase(document.encryptedPath)
+
+            saveDocumentAccess(document.id)
+
+            val location = if (document.type == DocumentType.IMAGE) getLocation() else null
+
+            val accessHistory = getDocumentAccessHistory(document.id)
+
+            _viewerState.value = DocumentViewerState(
+                bytes = bytes,
+                type = document.type,
+                location = location,
+                accessHistory = accessHistory
             )
+
+            _event.emit(DocumentsEvent.OpenDocumentViewer)
+        }
+    }
+
+    private suspend fun saveDocumentAccess(documentId: String) {
+        try {
+            registerAccessUseCase(documentId)
+        } catch (e: Exception) {
         }
     }
 
@@ -182,7 +204,8 @@ class DocumentsViewModel(
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
                         val geocoder = Geocoder(applicationContext)
-                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        val addresses =
+                            geocoder.getFromLocation(location.latitude, location.longitude, 1)
                         val street = addresses?.firstOrNull()?.thoroughfare ?: "Unknown Street"
                         cont.resume(street, null)
                     } else {

@@ -2,9 +2,16 @@ package com.docvault.feature_docs.documents_viewer
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,16 +19,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import com.docvault.domain.model.DocumentType
 import com.docvault.feature_docs.documents_viewer.interactor.DocumentViewerState
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import java.util.Date
 
 @Composable
 fun DocumentViewerScreen(
     state: DocumentViewerState
 ) {
+    state.accessHistory?.let { history ->
+        Column(modifier = Modifier.padding(8.dp)) {
+            Text("Últimos accesos:", style = MaterialTheme.typography.titleMedium)
+            history.takeLast(5).forEach { access ->
+                Text("- ${Date(access.accessedAt)}")
+            }
+        }
+    }
 
     when (state.type) {
 
