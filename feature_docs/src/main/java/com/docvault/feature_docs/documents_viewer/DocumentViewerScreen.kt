@@ -47,7 +47,7 @@ fun DocumentViewerScreen(
                 val canvas = Canvas(mutableBitmap)
                 val paint = Paint().apply {
                     color = Color.RED
-                    alpha = 80 // semi-transparente
+                    alpha = 80
                     textSize = 40f
                     isAntiAlias = true
                 }
