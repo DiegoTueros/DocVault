@@ -2,23 +2,29 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.docvault.feature_documents"
+    namespace = "com.docvault.feature_docs"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 24
     }
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
     buildFeatures {
         compose = true
     }
+}
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -29,7 +35,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
 
     implementation(platform(libs.androidx.compose.bom))
-
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
